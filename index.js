@@ -24,6 +24,7 @@ async function run() {
         console.log("MongoDB connected");
         const db = await client.db("rent_wheels_db");
         const usersCollection = await db.collection("users");
+        const carsCollection = await db.collection("cars");
 
         //get the users
         app.get("/users", async (req, res) => {
@@ -46,8 +47,32 @@ async function run() {
                 res.send(result);
             }
         })
+
+        //get the cars
+        app.get("/cars", async (req, res) => {
+            const cursor = carsCollection.find({});
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        //post new car
+        app.post("/cars", async (req, res) => {
+            const newCar = req.body;
+            const carName = req.body.carName;
+            console.log(newCar);
+            const query = { carName: carName };
+            const checkCar = await carsCollection.findOne(query);
+            if (checkCar) {
+                res.send({ message: "Car already exists" });
+            }
+            else {
+                const result = await carsCollection.insertOne(newCar);
+                res.send(result);
+            }
+        })
+
         await client.db("admin").command({ ping: 1 });
-        console.log("Pinged successfully");
+        console.log("Pinged  successfully");
     }
     finally {
 
