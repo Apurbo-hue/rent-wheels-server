@@ -37,7 +37,7 @@ async function run() {
         app.post("/users", async (req, res) => {
             const newUser = req.body;
             const email = req.body.email;
-            const query = { email:email};
+            const query = { email: email };
             const checkUser = await usersCollection.findOne(query)
             if (checkUser) {
                 res.send({ message: "User already exists" })
@@ -50,10 +50,25 @@ async function run() {
 
         //get the cars
         app.get("/cars", async (req, res) => {
+            const email = req.query.email;
+            console.log(email)
+            if (email) {
+                const cursor = carsCollection.find({providerEmail:email});
+                const result = await cursor.toArray();
+                return res.send(result);
+            }
             const cursor = carsCollection.find({});
             const result = await cursor.toArray();
             res.send(result);
         })
+
+        //get the featured cars
+        app.get("/featuredCars", async (req, res) => {
+            const cursor = carsCollection.find({}).sort({ dateAdded: -1 }).limit(6);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
 
         //get the specific car by the id
         app.get("/cars/:id", async (req, res) => {
