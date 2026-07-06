@@ -25,6 +25,7 @@ async function run() {
         const db = await client.db("rent_wheels_db");
         const usersCollection = await db.collection("users");
         const carsCollection = await db.collection("cars");
+        const bookingsCollection = await db.collection("bookings");
 
         //get the users
         app.get("/users", async (req, res) => {
@@ -53,7 +54,7 @@ async function run() {
             const email = req.query.email;
             console.log(email)
             if (email) {
-                const cursor = carsCollection.find({providerEmail:email});
+                const cursor = carsCollection.find({ providerEmail: email });
                 const result = await cursor.toArray();
                 return res.send(result);
             }
@@ -93,7 +94,7 @@ async function run() {
                 res.send(result);
             }
         })
-        
+
         //delete a car
         app.delete("/cars/:id", async (req, res) => {
             const id = req.params.id;
@@ -102,6 +103,37 @@ async function run() {
             res.send(result);
 
         })
+        //get the bookings
+        app.get("/bookings", async (req, res) => {
+            const email = req.query.userEmail
+
+            if (email) {
+                const cursor = bookingsCollection.find({ userEmail: email });
+                const result = await cursor.toArray();
+                return res.send(result);
+            }
+
+            const cursor = bookingsCollection.find({});
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        //post bookings
+        app.post("/bookings", async (req, res) => {
+            const newBooking = req.body;
+            const id = req.body.carId;
+            const query = { carId: id }
+            const checkAvailability = await bookingsCollection.findOne(query)
+            if (checkAvailability) {
+                return res.status(400).send({ message: "already booked" });
+            }
+            else {
+                const result = await bookingsCollection.insertOne(newBooking);
+                res.send(result);
+            }
+            console.log("details", newBooking);
+        })
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged  successfully");
