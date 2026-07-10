@@ -83,7 +83,7 @@ async function run() {
         app.post("/cars", async (req, res) => {
             const newCar = req.body;
             const carName = req.body.carName;
-            console.log(newCar);
+            // console.log(newCar);
             const query = { carName: carName };
             const checkCar = await carsCollection.findOne(query);
             if (checkCar) {
@@ -93,6 +93,19 @@ async function run() {
                 const result = await carsCollection.insertOne(newCar);
                 res.send(result);
             }
+        })
+
+        //patch the availability of the car
+        app.patch("/cars/:id", async (req, res) => {
+            const carId = req.params.id;
+            const update = req.body;
+            const target = { _id: new ObjectId(carId) };
+            const updateData = { $set: update }
+            const options = {upsert:true}
+            const result = await carsCollection.updateOne(target, updateData, options)
+            console.log("result",result);
+            // console.log("patch id",carId);
+            res.send(result)
         })
 
         //delete a car
@@ -131,13 +144,13 @@ async function run() {
                 const result = await bookingsCollection.insertOne(newBooking);
                 res.send(result);
             }
-            console.log("details", newBooking);
+            // console.log("details", newBooking);
         })
 
         //delete a booked car
         app.delete("/bookings/:id", async (req, res) => {
             const id = req.params.id;
-            console.log(id);
+            // console.log(id);
             const query = { _id: new ObjectId(id) };
             const result = await bookingsCollection.deleteOne(query);
             res.send(result);
