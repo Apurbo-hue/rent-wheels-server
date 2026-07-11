@@ -101,9 +101,9 @@ async function run() {
             const update = req.body;
             const target = { _id: new ObjectId(carId) };
             const updateData = { $set: update }
-            const options = {upsert:true}
+            const options = { upsert: true }
             const result = await carsCollection.updateOne(target, updateData, options)
-            console.log("result",result);
+            console.log("result", result);
             // console.log("patch id",carId);
             res.send(result)
         })
@@ -142,6 +142,19 @@ async function run() {
             }
             else {
                 const result = await bookingsCollection.insertOne(newBooking);
+                await carsCollection.updateOne(
+
+                    { _id: new ObjectId(id) },
+                    {
+                        $set: {
+                            availability: false
+                        },
+                         $inc: {
+                            bookingCount: 1
+                        }
+                    },
+
+                )
                 res.send(result);
             }
             // console.log("details", newBooking);
